@@ -1,0 +1,10 @@
+{
+  "mappings": {
+    "properties": {
+      "id": { "type": "long" },
+      "authorId": { "type": "long" },
+      "content": { "type": "text", "analyzer": "english" },
+      "createdAt": { "type": "date" }
+    }
+  }
+}
