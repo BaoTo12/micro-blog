@@ -93,6 +93,13 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+<!--		This dependency provides additional Hibernate type mappings that aren't built into Hibernate by default.-->
+		<dependency>
+			<groupId>io.hypersistence</groupId>
+			<artifactId>hypersistence-utils-hibernate-60</artifactId>
+			<version>3.7.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
