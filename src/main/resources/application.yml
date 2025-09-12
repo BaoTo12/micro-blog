@@ -22,5 +22,8 @@ spring:
   output: # make console more colorful
     ansi:
       enabled: ALWAYS
-
+  security:
+    user:
+      name: user
+      password: user
 
