@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
   password varchar(255),
   activated boolean NOT NULL DEFAULT true,
   lang_key varchar(10),
-  created_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz
 );
 
 --TODO POST
@@ -29,9 +30,9 @@ CREATE TABLE IF NOT EXISTS post (
 );
 
 ALTER TABLE post
-ADD COLUMN tsv_tile_content tsvector GENERATED ALWAYS AS
-(to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(content, '')))
-STORED;
+ADD COLUMN IF NOT EXISTS tsv_tile_content tsvector GENERATED ALWAYS AS
+(to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(content, ''))) STORED;
+
 -- ! Indexes for post
 -- Purpose:
 --  - Optimize common queries:
@@ -45,10 +46,10 @@ CREATE INDEX IF NOT EXISTS idx_post_created ON post (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_post_created_public ON post (created_at DESC) WHERE visibility = 'PUBLIC';
 
 -- ! Full-text (GIN) index for content
-CREATE INDEX idx_post_content_gin ON post USING gin (to_tsvector('english', content));
+CREATE INDEX IF NOT EXISTS idx_post_content_gin ON post USING gin (to_tsvector('english', content));
 
 -- ! Trigram index for fuzzy substring searches
-CREATE INDEX idx_post_content_trgm ON post USING gin (content gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_post_content_trgm ON post USING gin (content gin_trgm_ops);
 
 --TODO FOLLOW table
 -- Follower = người theo dõi (người bấm nút follow bạn).
