@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS users (
   email varchar(255),
   password varchar(255),
   activated boolean NOT NULL DEFAULT true,
-  lang_key varchar(10),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz
 );

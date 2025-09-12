@@ -19,3 +19,8 @@ spring:
     baseline-on-migrate: true
     user: postgres
     password: 12345
+  output: # make console more colorful
+    ansi:
+      enabled: ALWAYS
+
+
