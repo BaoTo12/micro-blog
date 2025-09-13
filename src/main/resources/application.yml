@@ -27,3 +27,11 @@ spring:
       name: user
       password: user
 
+server:
+  servlet:
+    context-path: /api
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
