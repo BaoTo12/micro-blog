@@ -23,7 +23,7 @@ import java.util.function.Function;
 @Component
 @Slf4j
 public class JwtUtil {
-    @Value("${jwt.secret:c45c4ceea4a9ecbb46a137d5de54a599ac45ad42c3df49cbd962198b7c29f2791d64e856}") // recommended to set via env var (base64)
+    @Value("${jwt.secret}") // recommended to set via env var (base64)
     private String jwtSecret;
 
     @Value("${jwt.expiration:86400}") // seconds

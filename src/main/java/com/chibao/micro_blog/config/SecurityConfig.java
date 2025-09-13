@@ -66,28 +66,28 @@ public class SecurityConfig {
                 // Configure URL-based authorization rules for your social media features
                 .authorizeHttpRequests(auth -> auth
                         // Public authentication endpoints
-                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+//                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+//
+//                        // public content
+//                        .requestMatchers(HttpMethod.GET, "/posts/public/**").permitAll()
+//                        .requestMatchers(HttpMethod.GET, "/search/public").permitAll()
+//
+//                        // health + error
+//                        .requestMatchers("/actuator/health").permitAll()
+//                        .requestMatchers("/error").permitAll()
+//
+//                        // protected
+//                        .requestMatchers("/posts/**").authenticated()
+//                        .requestMatchers("/users/profile/**").authenticated()
+//                        .requestMatchers("/users/follow/**").authenticated()
+//                        .requestMatchers("/timeline/**").authenticated()
+//                        .requestMatchers("/comments/**").authenticated()
+//                        .requestMatchers("/likes/**").authenticated()
+//
+//                        // admin
+//                        .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        // public content
-                        .requestMatchers(HttpMethod.GET, "/posts/public/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/search/public").permitAll()
-
-                        // health + error
-                        .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/error").permitAll()
-
-                        // protected
-                        .requestMatchers("/posts/**").authenticated()
-                        .requestMatchers("/users/profile/**").authenticated()
-                        .requestMatchers("/users/follow/**").authenticated()
-                        .requestMatchers("/timeline/**").authenticated()
-                        .requestMatchers("/comments/**").authenticated()
-                        .requestMatchers("/likes/**").authenticated()
-
-                        // admin
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 );
         // Add JWT filter
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

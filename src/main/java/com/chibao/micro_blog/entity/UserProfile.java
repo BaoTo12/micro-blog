@@ -2,14 +2,18 @@ package com.chibao.micro_blog.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "user_profile")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserProfile extends AbstractEntity {
+@Getter
+@Setter
+public class UserProfile{
+    @Id
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
