@@ -2,12 +2,17 @@ package com.chibao.micro_blog.service.impl;
 
 import com.chibao.micro_blog.components.CustomUserDetailsService;
 import com.chibao.micro_blog.components.JwtUtil;
+import com.chibao.micro_blog.components.UserPrincipal;
 import com.chibao.micro_blog.dto.request.LoginRequest;
+import com.chibao.micro_blog.entity.User;
 import com.chibao.micro_blog.service.AuthenticationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,10 +32,53 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         UserDetails userDetails = null;
         try {
             userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities()
+            );
+            SecurityContextHolder.getContext().setAuthentication(authToken);
         } catch (Exception ex) {
             log.warn("Authentication Failed for User with email {}", request.getEmail());
             throw ex;
         }
+
         return jwtUtil.generateToken(userDetails);
+    }
+
+    @Override
+    public User getMyUser() {
+        var context = SecurityContextHolder.getContext();
+        if (context == null || context.getAuthentication() == null || !context.getAuthentication().isAuthenticated()) {
+            throw new RuntimeException("Unauthenticated");
+        }
+
+        Authentication auth = context.getAuthentication();
+        log.info(String.valueOf(auth));
+
+        Object principal = auth.getPrincipal();
+
+        // If your JwtRequestFilter sets a UserPrincipal, return its User
+        if (principal instanceof UserPrincipal) {
+            return ((UserPrincipal) principal).getUser();
+        }
+
+        // If principal is a UserDetails that is actually a UserPrincipal implementation
+        if (principal instanceof UserDetails) {
+            // fall back: try to resolve by username via CustomUserDetailsService
+            String username = ((UserDetails) principal).getUsername();
+            UserDetails loaded = userDetailsService.loadUserByUsername(username);
+            if (loaded instanceof UserPrincipal) {
+                return ((UserPrincipal) loaded).getUser();
+            }
+        }
+
+        // If principal is a simple String username (common in some test setups), resolve it
+        if (principal instanceof String username) {
+            UserDetails loaded = userDetailsService.loadUserByUsername(username);
+            if (loaded instanceof UserPrincipal) {
+                return ((UserPrincipal) loaded).getUser();
+            }
+        }
+
+        throw new RuntimeException("Unauthenticated");
     }
 }

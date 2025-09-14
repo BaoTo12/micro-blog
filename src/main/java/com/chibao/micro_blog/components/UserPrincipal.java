@@ -47,4 +47,8 @@ public record UserPrincipal(User user) implements UserDetails {
     public String getEmail() {
         return user.getEmail();
     }
+
+    public User getUser() {
+        return user;
+    }
 }
