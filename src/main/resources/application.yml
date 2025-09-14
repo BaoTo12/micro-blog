@@ -36,4 +36,4 @@ logging:
       springframework:
         security: DEBUG
 jwt:
-  secret: c45c4ceea4a9ecbb46a137d5de54a599ac45ad42c3df49cbd962198b7c29f2791d64e856
+  secret: ${JWT_SECRET}
