@@ -6,7 +6,8 @@ import org.springframework.http.HttpStatusCode;
 
 @Getter
 public enum ErrorCode {
-    RESOURCE_NOT_FOUND(1111, HttpStatus.NOT_FOUND);
+    RESOURCE_NOT_FOUND(1111, HttpStatus.NOT_FOUND),
+    BAD_REQUEST(1112, HttpStatus.BAD_REQUEST);
 
     private final int code;
     private final HttpStatusCode statusCode;

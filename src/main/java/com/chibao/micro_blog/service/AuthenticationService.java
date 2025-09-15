@@ -6,5 +6,4 @@ import com.chibao.micro_blog.entity.User;
 public interface AuthenticationService {
     String authenticate(LoginRequest request);
 
-    User getMyUser();
 }

@@ -1,5 +1,6 @@
 package com.chibao.micro_blog.controller;
 
+import com.chibao.micro_blog.dto.request.CommentRequest;
 import com.chibao.micro_blog.dto.request.PostCreationRequest;
 import com.chibao.micro_blog.dto.request.PostUpdateRequest;
 import com.chibao.micro_blog.dto.response.ApiResponse;
@@ -14,7 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/users/profiles")
+@RequestMapping("/posts")
 @RequiredArgsConstructor
 public class PostController {
 
@@ -55,5 +56,30 @@ public class PostController {
         postService.deletePost(postId, userDetails.getUsername());
         ApiResponse<Void> response = new ApiResponse<>(HttpStatus.OK.value(), "Post deleted successfully", null);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<ApiResponse<Void>> likePost(@PathVariable Long postId,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
+        postService.likePost(postId, userDetails.getUsername());
+        ApiResponse<Void> response = new ApiResponse<>(HttpStatus.OK.value(), "Post liked successfully", null);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{postId}/like")
+    public ResponseEntity<ApiResponse<Void>> unlikePost(@PathVariable Long postId,
+                                                        @AuthenticationPrincipal UserDetails userDetails) {
+        postService.unlikePost(postId, userDetails.getUsername());
+        ApiResponse<Void> response = new ApiResponse<>(HttpStatus.OK.value(), "Post unliked successfully", null);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/{postId}/comments")
+    public ResponseEntity<ApiResponse<Void>> addComment(@PathVariable Long postId,
+                                                        @Valid @RequestBody CommentRequest commentRequest,
+                                                        @AuthenticationPrincipal UserDetails userDetails) {
+        postService.addComment(postId, commentRequest, userDetails.getUsername());
+        ApiResponse<Void> response = new ApiResponse<>(HttpStatus.CREATED.value(), "Comment added successfully", null);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }
