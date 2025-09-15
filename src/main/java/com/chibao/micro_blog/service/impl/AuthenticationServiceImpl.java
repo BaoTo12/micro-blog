@@ -44,41 +44,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return jwtUtil.generateToken(userDetails);
     }
 
-    @Override
-    public User getMyUser() {
-        var context = SecurityContextHolder.getContext();
-        if (context == null || context.getAuthentication() == null || !context.getAuthentication().isAuthenticated()) {
-            throw new RuntimeException("Unauthenticated");
-        }
 
-        Authentication auth = context.getAuthentication();
-        log.info(String.valueOf(auth));
-
-        Object principal = auth.getPrincipal();
-
-        // If your JwtRequestFilter sets a UserPrincipal, return its User
-        if (principal instanceof UserPrincipal) {
-            return ((UserPrincipal) principal).getUser();
-        }
-
-        // If principal is a UserDetails that is actually a UserPrincipal implementation
-        if (principal instanceof UserDetails) {
-            // fall back: try to resolve by username via CustomUserDetailsService
-            String username = ((UserDetails) principal).getUsername();
-            UserDetails loaded = userDetailsService.loadUserByUsername(username);
-            if (loaded instanceof UserPrincipal) {
-                return ((UserPrincipal) loaded).getUser();
-            }
-        }
-
-        // If principal is a simple String username (common in some test setups), resolve it
-        if (principal instanceof String username) {
-            UserDetails loaded = userDetailsService.loadUserByUsername(username);
-            if (loaded instanceof UserPrincipal) {
-                return ((UserPrincipal) loaded).getUser();
-            }
-        }
-
-        throw new RuntimeException("Unauthenticated");
-    }
 }
