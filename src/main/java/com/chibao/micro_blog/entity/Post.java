@@ -2,12 +2,18 @@ package com.chibao.micro_blog.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -18,13 +24,15 @@ import java.util.Set;
                 @Index(name = "idx_post_created", columnList = "created_at"),
         }
 )
+@Getter
+@Setter
+@NoArgsConstructor
+@DynamicInsert
+@DynamicUpdate
 public class Post extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     User author;
-
-    @Column(nullable = false, length = 125)
-    String title;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     String content;

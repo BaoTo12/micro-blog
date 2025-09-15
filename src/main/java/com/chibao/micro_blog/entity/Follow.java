@@ -2,12 +2,17 @@ package com.chibao.micro_blog.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.DynamicInsert;
 
 @Entity
 @Table(name = "follow")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Follow extends AbstractEntity {
+@Setter
+@DynamicInsert
+public class Follow extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "follower_id", nullable = false)

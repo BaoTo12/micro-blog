@@ -19,3 +19,21 @@ spring:
     baseline-on-migrate: true
     user: postgres
     password: 12345
+  output: # make console more colorful
+    ansi:
+      enabled: ALWAYS
+  security:
+    user:
+      name: user
+      password: user
+
+server:
+  servlet:
+    context-path: /api
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+jwt:
+  secret: ${JWT_SECRET}
