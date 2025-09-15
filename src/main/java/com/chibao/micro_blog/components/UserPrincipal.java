@@ -1,7 +1,6 @@
 package com.chibao.micro_blog.components;
 
 import com.chibao.micro_blog.entity.User;
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -40,15 +39,12 @@ public record UserPrincipal(User user) implements UserDetails {
     }
 
 
-   public Long getUserId(){
+    public Long getUserId() {
         return user.getId();
-   }
+    }
 
     public String getEmail() {
         return user.getEmail();
     }
 
-    public User getUser() {
-        return user;
-    }
 }

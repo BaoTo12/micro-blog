@@ -27,7 +27,6 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Override
     @Transactional
     public UserProfile createUserProfile(UserProfileCreationRequest request) {
-        log.info(String.valueOf(request));
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
