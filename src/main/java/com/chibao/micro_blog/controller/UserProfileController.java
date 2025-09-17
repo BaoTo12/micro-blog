@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,7 +29,7 @@ public class UserProfileController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User profile created successfully"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    public ApiResponse<UserProfile> createUserProfile(@RequestBody UserProfileCreationRequest request) {
+    public ApiResponse<UserProfile> createUserProfile(@Valid @RequestBody UserProfileCreationRequest request) {
         return ApiResponse.<UserProfile>builder()
                 .result(userProfileService.createUserProfile(request))
                 .build();
