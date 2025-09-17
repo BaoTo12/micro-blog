@@ -65,28 +65,32 @@ public class SecurityConfig {
                         ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 // Configure URL-based authorization rules for your social media features
                 .authorizeHttpRequests(auth -> auth
-                        // Public authentication endpoints
-                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                                // Public authentication endpoints
+                                .requestMatchers("/auth/**", "/api/auth/**").permitAll()
 
-                        // public content
-                        .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/{postId}").permitAll()
+                                // public content
+                                .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/{postId}").permitAll()
 
-                        // health + error
-                        .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/error").permitAll()
+                                // health + error
+                                .requestMatchers("/actuator/health").permitAll()
+                                .requestMatchers("/error").permitAll()
+                                .requestMatchers("/api-docs/**").permitAll()
+                                .requestMatchers("/api-docs.yaml/**").permitAll()
+                                .requestMatchers("/swagger-ui/**").permitAll()
 
-                        // protected
-                        .requestMatchers("/api/posts/**").authenticated()
-                        .requestMatchers("/users/profiles/**").authenticated()
-                        .requestMatchers("/users/follows/**").authenticated()
-                        .requestMatchers("/timeline/**").authenticated()
-                        .requestMatchers("/comments/**").authenticated()
-                        .requestMatchers("/likes/**").authenticated()
 
-                        // admin
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                                // protected
+                                .requestMatchers("/api/posts/**").authenticated()
+                                .requestMatchers("/users/profiles/**").authenticated()
+                                .requestMatchers("/users/follows/**").authenticated()
+                                .requestMatchers("/timeline/**").authenticated()
+                                .requestMatchers("/comments/**").authenticated()
+                                .requestMatchers("/likes/**").authenticated()
 
-                        .anyRequest().authenticated()
+                                // admin
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                                .anyRequest().authenticated()
                 );
         // Add JWT filter
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
