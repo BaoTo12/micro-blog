@@ -1,20 +1,15 @@
 package com.chibao.micro_blog.controller;
 
-import com.chibao.micro_blog.dto.request.UserCreationRequest;
 import com.chibao.micro_blog.dto.response.ApiResponse;
-import com.chibao.micro_blog.entity.User;
+import com.chibao.micro_blog.dto.response.UserResponse;
 import com.chibao.micro_blog.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "User", description = "APIs for managing users")
 @RestController
@@ -24,17 +19,28 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     UserService userService;
 
-    @PostMapping
-    @Operation(summary = "Create a new user")
+    @GetMapping("/{userId}")
+    @Operation(summary = "Get user by id")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User created successfully"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ApiResponse<String> createUser(@Valid @RequestBody UserCreationRequest request){
-        userService.createUser(request);
-        return ApiResponse.<String>builder()
-                .result("Created User Successfully")
+    public ApiResponse<UserResponse> getUser(@PathVariable("userId") Long userId) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getUserById(userId))
                 .build();
     }
 
+    @DeleteMapping("/{userId}")
+    @Operation(summary = "Deactivate user by id")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User deactivated successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ApiResponse<String> deleteUser(@PathVariable("userId") Long userId) {
+        userService.deactivateUser(userId);
+        return ApiResponse.<String>builder()
+                .result("User deactivated successfully")
+                .build();
+    }
 }
