@@ -2,7 +2,7 @@ import { Heart, MessageCircle, Share, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import type { BlogPost } from "../../constants/sample-data"
+import type { BlogPost } from "@/constants/sample-data"
 import { cn } from "@/lib/utils"
 
 interface PostCardProps {
