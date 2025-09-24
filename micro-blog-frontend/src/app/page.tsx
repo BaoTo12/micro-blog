@@ -1,3 +1,7 @@
+"use client"
+
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { CreatePost } from "@/components/create-post"
 import { PostCard } from "@/components/post-card"
@@ -5,6 +9,15 @@ import { Sidebar } from "@/components/sidebar"
 import { samplePosts } from "../../constants/sample-data"
 
 export default function Home() {
+  const router = useRouter()
+
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+      router.push("/auth/login")
+    }
+  }, [router])
+
   return (
     <div className="min-h-screen bg-background">
       <Header />

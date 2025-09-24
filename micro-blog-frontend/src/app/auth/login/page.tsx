@@ -1,17 +1,22 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useLoginForm } from "@/hooks/use-login-form"
 
 export default function LoginPage() {
+  const { email, setEmail, password, setPassword, error, handleLogin } = useLoginForm()
+
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo and Title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-facebook-blue mb-2">MicroBlog</h1>
-          <p className="text-gray-600">Connect with friends and the world around you on MicroBlog.</p>
+          <p className="text-gray-600">Connect with friends and the world around you.</p>
         </div>
 
         {/* Login Form */}
@@ -20,29 +25,39 @@ export default function LoginPage() {
             <CardTitle className="text-2xl text-center">Log in to MicroBlog</CardTitle>
             <CardDescription className="text-center">Enter your credentials to access your account</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email or phone number</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email or phone number"
-                className="h-12 text-base"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="Enter your password" className="h-12 text-base" />
-            </div>
-            <Button className="w-full h-12 bg-facebook-blue hover:bg-facebook-blue/90 text-white font-semibold text-base">
-              Log In
-            </Button>
-            <div className="text-center">
-              <Link href="#" className="text-facebook-blue hover:underline text-sm">
-                Forgotten password?
-              </Link>
-            </div>
-          </CardContent>
+          <form onSubmit={handleLogin}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email or phone number</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email or phone number"
+                  className="h-12 text-base"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  className="h-12 text-base"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+              <Button
+                type="submit"
+                className="w-full h-12 bg-facebook-blue hover:bg-facebook-blue/90 text-white font-semibold text-base"
+              >
+                Log In
+              </Button>
+            </CardContent>
+          </form>
           <CardFooter className="flex flex-col space-y-4">
             <div className="relative w-full">
               <div className="absolute inset-0 flex items-center">
