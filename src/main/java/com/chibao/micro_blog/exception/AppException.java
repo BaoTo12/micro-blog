@@ -11,13 +11,14 @@ public class AppException extends RuntimeException{
     private String message;
 
     public AppException(ErrorCode code, String message) {
+        super(message);
         this.code = code;
         this.message = message;
     }
 
-    public AppException(String message, ErrorCode code, String message1) {
-        super(message);
+    public AppException(ErrorCode code) {
+        super(code.name());
         this.code = code;
-        this.message = message1;
+        this.message = code.name();
     }
 }

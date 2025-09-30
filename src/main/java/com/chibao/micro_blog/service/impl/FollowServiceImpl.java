@@ -30,7 +30,7 @@ public class FollowServiceImpl implements FollowService {
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "User not found"));
 
         if (followRepository.findByFollowerAndFollowee(follower, followee).isPresent()) {
-            throw new RuntimeException("You are already following this user");
+            throw new AppException(ErrorCode.BAD_REQUEST, "You are already following this user");
         }
 
         Follow follow = new Follow();
@@ -48,7 +48,7 @@ public class FollowServiceImpl implements FollowService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Follow follow = followRepository.findByFollowerAndFollowee(follower, followee)
-                .orElseThrow(() -> new RuntimeException("You are not following this user"));
+                .orElseThrow(() -> new AppException(ErrorCode.BAD_REQUEST, "You are not following this user"));
 
         followRepository.delete(follow);
     }

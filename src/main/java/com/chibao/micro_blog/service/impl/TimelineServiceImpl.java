@@ -33,7 +33,7 @@ public class TimelineServiceImpl implements TimelineService {
     @Override
     public Page<PostResponse> getTimeline(int page, int size) {
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User currentUser = userPrincipal.getUser();
+        User currentUser = userPrincipal.user();
 
         List<User> followees = followRepository.findAllByFollower(currentUser)
                 .stream()
