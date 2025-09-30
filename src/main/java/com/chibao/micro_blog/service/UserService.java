@@ -12,4 +12,6 @@ public interface UserService {
     UserResponse getUserById(Long userId);
 
     void deactivateUser(Long userId);
+
+    UserResponse getCurrentUser();
 }

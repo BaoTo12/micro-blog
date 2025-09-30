@@ -19,6 +19,18 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     UserService userService;
 
+    @GetMapping("/me")
+    @Operation(summary = "Get current user")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ApiResponse<UserResponse> getCurrentUser() {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getCurrentUser())
+                .build();
+    }
+
     @GetMapping("/{userId}")
     @Operation(summary = "Get user by id")
     @ApiResponses(value = {
