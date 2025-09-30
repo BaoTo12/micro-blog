@@ -10,10 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "UserProfile", description = "APIs for managing user profiles")
 @RestController
@@ -32,6 +29,18 @@ public class UserProfileController {
     public ApiResponse<UserProfile> createUserProfile(@Valid @RequestBody UserProfileCreationRequest request) {
         return ApiResponse.<UserProfile>builder()
                 .result(userProfileService.createUserProfile(request))
+                .build();
+    }
+
+    @GetMapping("/{userId}")
+    @Operation(summary = "Get user profile by user id")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User profile found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User profile not found")
+    })
+    public ApiResponse<UserProfile> getUserProfile(@PathVariable("userId") Long userId) {
+        return ApiResponse.<UserProfile>builder()
+                .result(userProfileService.getUserProfile(userId))
                 .build();
     }
 }
