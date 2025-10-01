@@ -1,6 +1,7 @@
 package com.chibao.micro_blog.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -31,5 +32,6 @@ public class User extends AbstractEntity {
     List<Post> posts;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
     UserProfile userProfile;
 }

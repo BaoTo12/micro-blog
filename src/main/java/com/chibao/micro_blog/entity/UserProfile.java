@@ -1,5 +1,6 @@
 package com.chibao.micro_blog.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class UserProfile{
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @MapsId
+    @JsonBackReference
     User user;
 
     @Column(name = "display_name", length = 100)
