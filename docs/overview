@@ -1,0 +1,514 @@
+# Web + Facebook Interfaces — Business Analysis, Requirements & Deliverables
+
+> Purpose: provide a complete business-analysis pack to build a primary web interface and complementary Facebook-facing interfaces (Facebook Login, Page integration, sharing, Messenger integration, Pixel tracking). This is a single-source document you can hand to product, design, and engineering to start implementation.
+
+---
+
+## 1. Executive Summary
+
+Build a responsive web product that (1) serves core users via a modern website and (2) leverages Facebook ecosystem to increase acquisition, engagement, and seamless social actions (login, share, Messenger notifications). Deliver an MVP that includes: user registration/login, content feed or product listing, social sharing, Facebook Login, and basic Messenger notifications.
+
+**Primary goals**
+
+* Fast time-to-market for MVP: core web flows + Facebook Login and share.
+* High conversion of Facebook visitors using frictionless login and deep linking.
+* Track and optimize acquisition with Facebook Pixel and analytics.
+
+**Success metrics (first 3 months)**
+
+* 30% of new signups use Facebook Login.
+* 10% lift in conversion rate on pages with social sharing enabled.
+* <2s TTFB for main pages, 90th percentile.
+
+---
+
+## 2. Scope & Deliverables
+
+**MVP Deliverables**
+
+* Product spec & acceptance criteria (this document).
+* UI wireframes (desktop + mobile) for key pages.
+* API specification (REST) and Facebook integration plan (Graph API, Webhooks).
+* Database schema & sample migration scripts.
+* CI/CD pipeline configuration and deployment scripts (Docker/K8s or simpler Docker Compose for MVP).
+* Basic automation tests + E2E smoke tests.
+
+**Future (post-MVP)**
+
+* Deep Messenger bot flows, Page Tab app, native share preview optimization, A/B tests for social CTAs.
+
+---
+
+## 3. Stakeholders
+
+* Product Manager — prioritization, acceptance
+* UX / UI Designer — wireframes, visual design
+* Frontend Engineers — React/Next.js or similar
+* Backend Engineers — REST APIs, FB integrations
+* DevOps — infra, CI/CD
+* QA — test plans
+* Marketing / Growth — FB Ads, Pixel, creative
+* Legal / Privacy — compliance with privacy laws (GDPR, local regulations)
+
+---
+
+## 4. User Personas
+
+**Persona A — New Visitor (Facebook-sourced)**
+
+* Age: 20–35; uses Facebook frequently; low patience for signup forms.
+* Needs: discover content fast, login with minimal friction.
+* Success: signs up via Facebook Login and performs first action.
+
+**Persona B — Logged-in Power User**
+
+* Uses desktop, expects fast feed, notifications via Messenger.
+* Success: uses social sharing regularly and returns weekly.
+
+**Persona C — Admin / Content Manager**
+
+* Manages posts/products and uses Page-level publishing to Facebook.
+* Success: publishes to site and optionally cross-posts to Facebook Pages.
+
+---
+
+## 5. User Journeys (MVP)
+
+**J1 — Discover → Quick Signup via Facebook**
+
+1. User clicks a Facebook ad → landing page.
+2. Clicks *Continue with Facebook*.
+3. OAuth flow returns email + name; new user created.
+4. Onboarding modal asks to follow categories.
+
+**J2 — Share Content to Facebook**
+
+1. Logged-in user clicks "Share to Facebook" on an article/product.
+2. Facebook Share Dialog opens (client-side) with metadata (og:title, og:description, og:image).
+3. User posts.
+
+**J3 — Messenger Notification of Action**
+
+1. User opts-in to receive updates via Messenger.
+2. App sends relevant messages via Facebook Messenger API or via own push + deep link to web.
+
+---
+
+## 6. Features & Priority
+
+**MVP (Must have)**
+
+* Public landing & listing pages (responsive).
+* User registration/login (email) + Facebook Login (OAuth).
+* Content detail pages with Open Graph meta tags for rich shares.
+* Facebook Share button & Web Share fallback.
+* Admin UI for publishing content.
+* Pixel & basic analytics events (PageView, Purchase, SignUp).
+
+**MVP (Should have)**
+
+* Basic Messenger opt-in and send message for specific actions.
+* Page-level Facebook posting (optionally manual publish to Page via token).
+
+**Later / Nice-to-have**
+
+* Page Tab app.
+* Automated cross-posting with scheduled posts.
+* Full chatbot flows with NLP.
+
+---
+
+## 7. Functional Requirements (Selected)
+
+### Authentication & Authorization
+
+* Users can register with email+password.
+* Users can sign in with Facebook (OAuth 2.0) — capture `email`, `name`, `profile_picture`.
+* Backend stores the provider and provider-specific ID.
+* Support linking multiple auth providers to same account.
+
+### Content Management
+
+* CRUD endpoints for content (articles/products) with RBAC for Admins.
+* Each content item stores `og:title`, `og:description`, `og:image` for share previews.
+
+### Facebook Integrations
+
+* Facebook Login using OAuth (server-side flow recommended for token security).
+* Share functionality using Facebook Share Dialog (client-side) or Graph API (server-side) for Page posts.
+* Messenger: subscribe users (via OAuth or permission flow) and send messages via Page Access Token.
+
+---
+
+## 8. Non-Functional Requirements
+
+* Performance: homepage SSR or static + cached API responses; target <2s for homepage.
+* Scalability: design for horizontal scaling; stateless backend.
+* Security: OWASP top 10 mitigations; secure storage for tokens; HTTPS-only.
+* Privacy: allow users to unlink Facebook and delete account data (export/delete).
+* Accessibility: meet WCAG 2.1 AA for primary flows.
+
+---
+
+## 9. Data Model (High-level)
+
+Entities (MVP): `users`, `content`, `comments`, `fb_integrations`, `sessions`, `analytics_events`.
+
+Sample simplified ER (text form):
+
+* `users (id PK, email, name, password_hash, created_at)`
+* `content (id PK, title, slug, body, og_title, og_description, og_image, author_id FK users, status, published_at)`
+* `fb_integrations (id PK, user_id FK users, provider, provider_id, access_token_encrypted, refresh_token_encrypted, expires_at)`
+* `messenger_subscriptions (id PK, user_id FK users, psid, subscribed_at)`
+
+### Example SQL (Postgres) — minimal
+
+```sql
+CREATE TABLE users (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text UNIQUE,
+  name text,
+  password_hash text,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE content (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title text,
+  slug text UNIQUE,
+  body text,
+  og_title text,
+  og_description text,
+  og_image text,
+  author_id uuid REFERENCES users(id),
+  status text,
+  published_at timestamptz
+);
+
+CREATE TABLE fb_integrations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES users(id),
+  provider text,
+  provider_id text,
+  access_token text,
+  refresh_token text,
+  expires_at timestamptz
+);
+```
+
+---
+
+## 10. API Spec (Selected Endpoints)
+
+### Auth
+
+* `POST /api/v1/auth/signup` — body `{email,password,name}` → 201
+* `POST /api/v1/auth/login` — body `{email,password}` → JWT
+* `POST /api/v1/auth/facebook` — body `{accessToken}` → create/link account (server validates token with FB)
+
+### Content
+
+* `GET /api/v1/content` — list with pagination
+* `GET /api/v1/content/:slug` — detail (includes OG meta on server-rendered page)
+* `POST /api/v1/content` — admin create
+
+### FB Admin Actions (server-side)
+
+* `POST /api/v1/fb/pages/:pageId/publish` — publish content to Page (requires Page Access Token + review permissions)
+
+### Webhooks
+
+* `POST /api/v1/hooks/facebook` — receive webhook events from FB (verify signature)
+
+#### Example: Exchange FB access token server-side (pseudo)
+
+```http
+POST /api/v1/auth/facebook
+Content-Type: application/json
+
+{"accessToken":"EAAX..."}
+```
+
+Response: `{ "token": "<our-jwt>", "user": { ... } }`
+
+Backend must verify token with Facebook Graph API (e.g. `https://graph.facebook.com/me?access_token=...&fields=id,email,name`) and optionally exchange short-lived token for long-lived.
+
+---
+
+## 11. Facebook-Specific Notes & Permissions
+
+**Common scopes to request**
+
+* `email`, `public_profile` — basic login
+* `pages_show_list`, `pages_read_engagement`, `pages_manage_posts` — for Page posting and reading
+* `pages_messaging` — for Messenger send (requires review)
+
+**App Review**
+
+* Any permission beyond basic profile/email requires Facebook App Review. Prepare screencasts and test users.
+
+**Privacy**
+
+* Store only required FB fields; present privacy policy during login and in settings.
+
+**OG tags**
+
+* Ensure each content page has `<meta property="og:title" ...>` etc for correct preview when sharing.
+
+**Messenger**
+
+* Use page-scoped ID (PSID) for messaging users. You can only message users who opted-in. Implement opt-in UI and store PSIDs.
+
+---
+
+## 12. Wireframes & UX Guidance (high level)
+
+**Pages**
+
+* Landing / Home: hero, popular items, CTA `Continue with Facebook` prominently.
+* Listing page: filters, sort, infinite scroll or pagination.
+* Detail page: content + share toolbar (Facebook, Twitter, Copy Link), clear CTA.
+* Profile / Settings: linked accounts, disconnect Facebook, messenger opt-in.
+* Admin dashboard: draft/publish workflow, quick post to FB Page toggle.
+
+**UI patterns**
+
+* Keep Facebook Login and Share actions visible but not intrusive.
+* Provide fallback if FB SDK fails: normal signup and web share.
+* Desktop and mobile-first wireframes; ensure share dialog fallback on mobile uses native share if possible.
+
+---
+
+## 13. QA & Testing Plan
+
+**Automated tests**
+
+* Unit tests for backend logic and FB token verification.
+* Integration tests for OAuth flow using test tokens.
+* E2E tests for signup/login, share dialog invocation, content publish.
+
+**Manual tests**
+
+* Validate OG metadata across social debuggers (Facebook Sharing Debugger).
+* Validate webhook signatures and retries.
+* Validate Messenger opt-in and actual messages to test PSIDs.
+
+**Security tests**
+
+* Penetration test focusing on OAuth flows, token storage, XSS on open graph images/descriptions.
+
+---
+
+## 14. Deployment & Infra Recommendation (MVP)
+
+**Stack (recommended)**
+
+* Frontend: React (Next.js for SSR and SEO) — or Vue/Nuxt.js.
+* Backend: Node.js (Express/Nest) or Spring Boot (Java) — whichever team prefers.
+* Database: PostgreSQL.
+* Cache/session: Redis.
+* Hosting: Docker containers on a managed Kubernetes (EKS/GKE/AKS) or VPS and Docker Compose for prototype.
+* CDN: Cloudflare or equivalent for images and OG assets.
+* CI/CD: GitHub Actions / GitLab CI — build → test → push image → deploy.
+
+**Secrets management**
+
+* Use an encrypted vault for Facebook App secret, page tokens, and DB credentials.
+
+**Observability**
+
+* Logging: structured logs (JSON), centralized (ELK or Loki).
+* Metrics: Prometheus + Grafana; track error rates, latency.
+
+---
+
+## 15. Security & Compliance Checklist
+
+* Use HTTPS everywhere; HSTS enabled.
+* Validate and sanitize all user content to avoid XSS in OG fields.
+* Encrypt access tokens at rest.
+* Implement rate limiting on endpoints interacting with FB to avoid abuse.
+* Provide data export and deletion flows for users.
+* Keep Facebook App review artifacts ready (screencasts, privacy policy links).
+
+---
+
+## 16. Risks & Mitigation
+
+* **Risk:** FB App Review delays / rejection.
+  **Mitigation:** Prepare clear screencasts and only request essential permissions for MVP.
+
+* **Risk:** OG preview caching causing stale social previews.
+  **Mitigation:** Use unique og:url or caching headers and use Facebook Sharing Debugger during QA.
+
+* **Risk:** User privacy concerns around linking accounts.
+  **Mitigation:** Explicit consent screens and clear privacy controls (unlink, export, delete).
+
+---
+
+## 17. Roadmap & Rough Timeline (example)
+
+**Week 1** — Discovery, detailed requirements, wireframes.
+**Week 2–3** — Frontend MVP pages + basic backend (auth, content CRUD).
+**Week 4** — Facebook Login + OG meta integration.
+**Week 5** — Facebook Share, Pixel setup, Analytics.
+**Week 6** — Messenger opt-in + basic messaging; QA and bugfixes.
+**Week 7** — Launch prep, App Review submission if needed, deploy.
+
+> This timeline assumes a small cross-functional team (2 FE, 1 BE, 1 designer, 1 DevOps, 1 QA). Adjust if resources differ.
+
+---
+
+## 18. Acceptance Criteria (Examples)
+
+* Signup via Facebook returns a working session token and creates a user record with email and provider ID.
+* Content pages, when shared, show correct title, description, and image in Facebook preview (validated in sharing debugger).
+* Admin can publish to a connected Facebook Page using REST endpoint and confirmed on Page.
+* Messenger opt-in allows sending a targeted message which the user receives.
+
+---
+
+## 19. Backlog: Epics & Example User Stories
+
+**Epic: Authentication**
+
+* `US-101` As a user, I can sign up with email/password. (M)
+* `US-102` As a user, I can sign up/log in with Facebook and skip creating a new password. (M)
+
+**Epic: Content & Sharing**
+
+* `US-201` As a visitor, I can view content and share to Facebook. (M)
+* `US-202` As an admin, I can publish content and optionally post to our FB Page. (S)
+
+**Epic: Messenger**
+
+* `US-301` As a user, I can opt-in to receive Messenger notifications for order/status updates. (S)
+
+Add acceptance criteria and estimate story points for each.
+
+---
+
+## 20. Implementation Notes & Tips (tell it like it is)
+
+* **Do server-side FB token validation.** Client tokens are short-lived and easy to spoof. Call Graph API to validate and fetch `id,email`.
+* **Don't request too many Facebook permissions for MVP.** App Review slows you down and can be rejected. Start with `email,public_profile` and iterate.
+* **Make OG metadata canonical and stable.** Facebook caches aggressively — plan for cache invalidation.
+* **Store tokens securely and rotate long-lived tokens periodically.** Page tokens can be long-lived; treat them like secrets.
+* **Design for unlinking.** Users will want to remove FB connection; support account unlink and graceful fallback to email/password.
+
+---
+
+## 21. Artifacts to Produce
+
+* This specification (you have it).
+* Wireframes (Figma/Sketch/Zeplin): home, listing, detail, login, profile, admin.
+* API contract (OpenAPI/Swagger file).
+* PlantUML architecture & sequence diagrams (see sample below).
+* Migration scripts and sample env templates.
+
+### Sample PlantUML (architecture)
+
+```puml
+@startuml
+package Web {
+  [Browser] --> [Frontend (Next.js)]
+}
+package Backend {
+  [Frontend (Next.js)] --> [API (Node/Spring)]
+  [API (Node/Spring)] --> [Postgres]
+  [API (Node/Spring)] --> [Redis]
+  [API (Node/Spring)] --> [Facebook Graph API]
+}
+@enduml
+```
+
+### Sample PlantUML (oauth sequence)
+
+```puml
+@startuml
+actor User
+participant Browser
+participant Server
+participant Facebook
+User -> Browser: Click "Login with Facebook"
+Browser -> Facebook: open OAuth dialog
+Facebook -> Browser: redirect code
+Browser -> Server: POST /auth/facebook {code}
+Server -> Facebook: exchange code for token
+Facebook -> Server: return access_token
+Server -> DB: create or link user
+Server -> Browser: return session
+@enduml
+```
+
+---
+
+## 22. Next Steps (recommended immediate actions)
+
+1. Review & confirm MVP feature list and success metrics.
+2. Designer: create low-fi wireframes for 5 core screens.
+3. Engineer: setup repo + basic CI, skeleton frontend & backend services.
+4. Prepare Facebook App (developer account), create app id & secret, configure OAuth redirect URIs and `privacy policy` url.
+5. Schedule first sprint and assign owners for Auth, Content, FB integration.
+
+---
+
+## 23. Appendix: Quick-check Implementation Checklist
+
+* [ ] Create Facebook Developer App
+* [ ] Configure OAuth redirect URIs
+* [ ] Implement server-side token verification
+* [ ] Add OG meta generation on server-side renders
+* [ ] Setup Facebook Pixel and fire PageView event
+* [ ] Implement admin Page posting (optional)
+* [ ] Implement webhook endpoint for Page events
+* [ ] Prepare App Review screencasts and instructions
+
+---
+
+*If you want, I can also generate:*
+
+* `openapi.yaml` for the API endpoints in this document
+* A small sample Next.js project structure scaffold
+* Figma-ready wireframe spec (as markdown or .figma notes)
+* PlantUML `.puml` files and separate markdown files for epics/user stories (CSV)
+
+---
+
+
+| Layer                  | Technology                                                   | Purpose                                                                                     |
+| ---------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| **Framework**          | **Next.js 14+ (React 18)**                                   | Hybrid rendering (SSR, SSG, CSR). Required for Facebook crawler compatibility with OG tags. |
+| **UI Library**         | **React**                                                    | Component-based UI architecture for modular and reusable interfaces.                        |
+| **Styling**            | **TailwindCSS** + `clsx` or `styled-components`              | Rapid UI prototyping with a consistent design system.                                       |
+| **State Management**   | **(TanStack Query)**              | Efficient data fetching, caching, and local/global state management.                        |
+| **Routing**            | **Next.js App Router**                                       | File-based routing system supporting layouts, metadata, and server components.              |
+| **Forms & Validation** | **React Hook Form** + **Zod**                                | Form management and schema validation with strong TypeScript support.                       |
+| **HTTP Client**        | **Axios** or built-in `fetch`                                | REST/GraphQL communication with backend and Facebook Graph API.                             |
+| **Authentication**     | **NextAuth.js** (Facebook Provider) or **Custom OAuth flow** | Handles Facebook login, session cookies, and secure token management.                       |
+| **Meta Tags / SEO**    | **Next Head API** or `metadata` in App Router                | Generate Open Graph (OG) tags for Facebook sharing and SEO.                                 |
+| **UI Components**      | **shadcn/ui**, **Headless UI**, **Radix UI**                 | Accessible, composable components for consistent UX.                                        |
+| **Charts & Visuals**   | **Recharts** or **Chart.js**                                 | Display analytics, engagement metrics, or social reach data.                                |
+| **Notifications**      | **React Hot Toast** or **Sonner**                            | Real-time UI feedback for user actions and Facebook events.                                 |
+
+| Layer             | Technology                                                 | Purpose                                                               |
+| ----------------- | ---------------------------------------------------------- | --------------------------------------------------------------------- |
+| **Runtime**       | **Node.js 20+**                                            | Server runtime environment for API routes.                            |
+| **Framework**     | **Next.js API Routes** or **NestJS (microservice mode)**   | Handles API endpoints, webhooks, and OAuth callback logic.            |
+| **Database**      | **PostgreSQL**                                             | Relational data storage (user accounts, tokens, page data, messages). |
+| **ORM**           | **Prisma ORM**                                             | Type-safe DB access, migrations, and schema management.               |
+| **Cache / Queue** | **Redis**                                                  | Store tokens, sessions, and Facebook webhook event queues.            |
+| **Validation**    | **Zod / Joi**                                              | Enforce schema validation for request/response payloads.              |
+| **Security**      | **Helmet.js**, **CORS**, **CSRF tokens**                   | Protect against common web vulnerabilities.                           |
+| **API Docs**      | **OpenAPI 3 (Swagger)**                                    | Define and test endpoints for internal and external use.              |
+| **Integration**   | **Facebook Graph API**, **Messenger API**, **Webhook API** | Send/receive messages, posts, and event updates from Facebook.        |
+
+
+| Feature                 | Technology                       | Purpose                                                         |
+| ----------------------- | -------------------------------- | --------------------------------------------------------------- |
+| **Login & Permissions** | **Facebook Login API**           | Authenticate users and link Facebook profiles to app accounts.  |
+| **Page Publishing**     | **Graph API (v20+)**             | Post, schedule, or fetch content from connected Facebook Pages. |
+| **Messenger Bot**       | **Messenger Send API + Webhook** | Handle real-time user messages and automated replies.           |
+| **Webhooks**            | **Facebook Webhooks API**        | Receive event updates (page posts, comments, messages).         |
+| **App Review**          | **Facebook Developer Portal**    | Manage permissions, review submissions, and compliance.         |
+
